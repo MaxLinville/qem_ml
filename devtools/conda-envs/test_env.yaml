@@ -7,6 +7,13 @@ dependencies:
   - python
   - pip
 
+    # Package dependencies
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - qiskit
+  - qiskit-aer
+  - qiskit-ibm-runtime
     # Testing
   - pytest
   - pytest-cov
