@@ -2,7 +2,7 @@ qem_ml
 ==============================
 [//]: # (Badges)
 [![GitHub Actions Build Status](https://github.com/REPLACE_WITH_OWNER_ACCOUNT/qem_ml/workflows/CI/badge.svg)](https://github.com/REPLACE_WITH_OWNER_ACCOUNT/qem_ml/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/qem_ml/branch/main/graph/badge.svg)](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/qem_ml/branch/main)
+[![codecov](https://codecov.io/gh/MaxLinville/qem_ml/branch/main/graph/badge.svg)](https://codecov.io/gh/MaxLinville/qem_ml/branch/main)
 
 
 A Python package for implementing and testing machine learning-based quantum error mitigation methods
