@@ -5,6 +5,9 @@
 
 Welcome to qem_ml's documentation!
 =========================================================
+qem_ml is a Python package for machine learning in quantum mechanics. 
+It provides tools for building and training machine learning models for circuit
+noise analysis.
 
 .. grid:: 1 1 2 2
 
