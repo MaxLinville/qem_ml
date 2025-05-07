@@ -3,3 +3,8 @@ matplotlib
 qiskit
 qiskit-aer
 scikit-learn
+Sphinx
+sphinx-autoapi
+sphinx-copybutton
+sphinx_design
+sphinx-rtd-theme
