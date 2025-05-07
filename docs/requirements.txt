@@ -8,3 +8,4 @@ sphinx-autoapi
 sphinx-copybutton
 sphinx_design
 sphinx-rtd-theme
+pydata-sphinx-theme
