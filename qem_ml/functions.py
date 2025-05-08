@@ -32,38 +32,6 @@ def create_neural_network():
 
 
 
-def run_circuit(circuit: QuantumCircuit, noise_model: NoiseModel = None, filename_prefix: str = "") -> dict:
-    """
-    Run the quantum circuit with or without noise.
-    
-    Args:
-        circuit: The quantum circuit to run
-        noise_model: Optional noise model to apply
-        filename_prefix: Prefix for the output histogram filename
-    
-    Returns:
-        dict: The measurement counts
-    """
-    # Create a simulator backend with optional noise model
-    backend = AerSimulator(noise_model=noise_model)
-    
-    # Transpile circuit
-    passmanager = generate_preset_pass_manager(
-        optimization_level=3, backend=backend
-    )
-    circ_t = passmanager.run(circuit)
-    
-    # Run and get counts
-    result = backend.run(circ_t).result()
-    counts = result.get_counts(0)
-    
-    # Plot output with appropriate filename
-    output_filename = f"{filename_prefix}histogram.png"
-    plot_histogram(counts).savefig(output_filename)
-    print(f"Histogram saved as {output_filename}")
-
-    return counts
-
 '''
 TODO:
 - fully implement create_circuit_from_file
@@ -74,6 +42,12 @@ TODO:
 - implement a function to generate a dataset of circuits with noise, inputs, outputs, and expected outputs
 - add a "noise reversal" function (or maybe just the neural network can learn directly) to attempt to mitigate errors
 - determine cutoff for noise parameters in which the neural network can no longer learn or be effective
+
+
+
+https://postquantum.com/quantum-computing/quantum-error-correction/
+
+Probabilistic error cancellation (PEC)
 '''
 
 if __name__ == "__main__":
