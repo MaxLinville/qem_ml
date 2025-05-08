@@ -1,7 +1,9 @@
 qem_ml
 ==============================
 [//]: # (Badges)
-[![rtd](https://readthedocs.org/projects/qem_ml-maxlinville/badge/?version=latest&style=plastic)](https://qem-ml-maxlinville.readthedocs.io/en/latest/) [![CI](https://github.com/MaxLinville/qem_ml/actions/workflows/CI.yaml/badge.svg)](https://github.com/MaxLinville/qem_ml/actions/workflows/CI.yaml)
+[![rtd](https://readthedocs.org/projects/qem_ml-maxlinville/badge/?version=latest&style=plastic)](https://qem-ml-maxlinville.readthedocs.io/en/latest/) 
+[![codecov](https://codecov.io/gh/MaxLinville/qem_ml/branch/main/graph/badge.svg)](https://codecov.io/gh/MaxLinville/qem_ml/branch/main)
+[![CI](https://github.com/MaxLinville/qem_ml/actions/workflows/CI.yaml/badge.svg)](https://github.com/MaxLinville/qem_ml/actions/workflows/CI.yaml)
 
 A Python package for implementing and testing machine learning-based quantum error mitigation methods
 
