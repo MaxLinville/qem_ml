@@ -13,7 +13,7 @@ from qem_ml.circuits.simulator import Simulator
 
 
 # Define test directory and ensure it exists
-TEST_DIR = os.path.join(os.path.dirname(__file__), 'temp_test_files')
+TEST_DIR = os.path.join(os.path.dirname(__file__), 'data', 'circuit_data')
 os.makedirs(TEST_DIR, exist_ok=True)
 
 # Define fixture for a simple quantum circuit
@@ -113,19 +113,17 @@ class TestSimulator:
     
     def test_run_clean(self, simulator):
         """Test running a clean simulation."""
-        counts = simulator.run_clean(filename_prefix="test_clean_")
+        counts = simulator.run_clean(filename_prefix="test_clean_", generate_histogram=False)
         
         # Check that we got some counts
         assert len(counts) > 0
-        
-        # Check that output file was created
-        assert os.path.exists("test_clean_histogram.png")
+
     
     def test_run_without_circuit(self):
         """Test that running without a circuit raises an error."""
         empty_sim = Simulator()
         with pytest.raises(ValueError, match="No circuit provided for simulation"):
-            empty_sim.run_clean()
+            empty_sim.run_clean(generate_histogram=False)
     
     def test_add_noise(self, simulator):
         """Test adding noise to a circuit."""
@@ -169,18 +167,16 @@ class TestSimulator:
         simulator.add_noise(p_reset=0.1, p_meas=0.1, gate_error_probs={'h': 0.1, 'cx': 0.1})
         
         # Run noisy simulation
-        counts = simulator.run_noisy(filename_prefix="test_noisy_")
+        counts = simulator.run_noisy(filename_prefix="test_noisy_", generate_histogram=False)
         
         # Check that we got some counts
         assert len(counts) > 0
-        
-        # Check that output file was created
-        assert os.path.exists("test_noisy_histogram.png")
+    
     
     def test_run_noisy_without_explicit_noise(self, simulator):
         """Test that run_noisy adds noise if none is specified."""
         # Run noisy simulation without explicitly adding noise first
-        counts = simulator.run_noisy(filename_prefix="test_auto_noisy_")
+        counts = simulator.run_noisy(filename_prefix="test_auto_noisy_", generate_histogram=False)
         
         # Check that noise was automatically added
         assert simulator.noise_model is not None
@@ -197,18 +193,19 @@ class TestExternalCircuits:
     def test_load_data_circuits(self):
         """Test loading circuits from the data directory."""
         # Define path to data directory
-        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-                               'data', 'circuit_data')
+        data_dir = TEST_DIR
         
-        # Check if directory exists
-        if not os.path.exists(data_dir):
-            pytest.skip("Data directory not found")
+        # Create a test file if none exists
+        if not any(f.endswith('.qasm') for f in os.listdir(data_dir)):
+            test_circuit = QuantumCircuit(2, 2)
+            test_circuit.h(0)
+            test_circuit.cx(0, 1)
+            test_circuit.measure_all()
+            save_circuit_to_file(test_circuit, os.path.join(data_dir, 'test_circuit.qasm'))
         
-        # Find QASM files
+        # Get list of QASM files
         qasm_files = [f for f in os.listdir(data_dir) if f.endswith('.qasm')]
-        
-        if not qasm_files:
-            pytest.skip("No QASM files found in data directory")
+        assert len(qasm_files) > 0, f"No QASM files found in {data_dir}"
         
         # Test first QASM file
         test_file = os.path.join(data_dir, qasm_files[0])
@@ -218,10 +215,9 @@ class TestExternalCircuits:
         sim = Simulator(circuit)
         
         # Run clean and noisy simulations
-        clean_counts = sim.run_clean(filename_prefix=f"data_clean_{qasm_files[0]}_")
-        # Skip noisy simulation due to potential 'quantum_channel' error
-        # noisy_counts = sim.run_noisy(filename_prefix=f"data_noisy_{qasm_files[0]}_")
+        clean_counts = sim.run_clean(filename_prefix=f"data_clean_{qasm_files[0]}_", generate_histogram=False)
+        noisy_counts = sim.run_noisy(filename_prefix=f"data_noisy_{qasm_files[0]}_", generate_histogram=False)
         
         # Verify results
         assert len(clean_counts) > 0
-        # assert len(noisy_counts) > 0
+        assert len(noisy_counts) > 0

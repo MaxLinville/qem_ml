@@ -53,7 +53,7 @@ class Simulator:
         self.noisy_circuit: QuantumCircuit = None
         self.noise_params: dict = {}
     
-    def run_clean(self, filename_prefix: str = "clean_") -> Dict:
+    def run_clean(self, filename_prefix: str = "clean_",  generate_histogram: bool = True) -> Dict:
         """
         Run the quantum circuit without noise.
         
@@ -80,13 +80,14 @@ class Simulator:
         counts = result.get_counts(0)
         
         # Plot output with appropriate filename
-        output_filename = f"{filename_prefix}histogram.png"
-        plot_histogram(counts).savefig(output_filename)
-        print(f"Histogram saved as {output_filename}")
+        if generate_histogram:
+            output_filename = f"{filename_prefix}histogram.png"
+            plot_histogram(counts).savefig(output_filename)
+            print(f"Histogram saved as {output_filename}")
 
         return counts
     
-    def run_noisy(self, filename_prefix: str = "noisy_") -> Dict:
+    def run_noisy(self, filename_prefix: str = "noisy_", generate_histogram: bool = True) -> Dict:
         """
         Run the quantum circuit with noise.
         
@@ -120,9 +121,10 @@ class Simulator:
         counts = result.get_counts(0)
         
         # Plot output with appropriate filename
-        output_filename = f"{filename_prefix}histogram.png"
-        plot_histogram(counts).savefig(output_filename)
-        print(f"Histogram saved as {output_filename}")
+        if generate_histogram:
+            output_filename = f"{filename_prefix}histogram.png"
+            plot_histogram(counts).savefig(output_filename)
+            print(f"Histogram saved as {output_filename}")
 
         return counts
     
