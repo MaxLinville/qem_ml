@@ -1,0 +1,6 @@
+{
+  "num_qubits": 5,
+  "training_score": 0.0,
+  "model_path": "./mitigation_results/ghz_state.joblib",
+  "test_mse": 0.0010625333563832149
+}

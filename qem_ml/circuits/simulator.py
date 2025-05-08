@@ -128,6 +128,12 @@ class Simulator:
 
         return counts
     
+    def reset_noise_model(self):
+        """Reset the noise model to None"""
+        self.noise_model = None
+        self.noise_params = {}
+        self.noisy_circuit = None
+
     def add_noise(
         self, 
         error_types: List[str] = None,
