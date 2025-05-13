@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Dict, List, Tuple, Union, Optional
 from qiskit import QuantumCircuit
+from qiskit.visualization import plot_histogram
 
 from qem_ml.circuits.simulator import Simulator
 from qem_ml.models.qe_neural_net import QuantumErrorNeuralNet
@@ -141,7 +142,9 @@ def apply_error_mitigation(
 def generate_training_data(
     circuit: QuantumCircuit,
     num_samples: int = 50,
-    error_rates_range: Tuple[float, float] = (0.01, 0.25)
+    error_rates_range: Tuple[float, float] = (0.01, 0.25),
+    verbose: bool= False,
+    randomize_inputs: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Generate training data for error mitigation by simulating the circuit with different noise levels.
@@ -150,38 +153,73 @@ def generate_training_data(
         circuit: Quantum circuit to simulate
         num_samples: Number of noisy samples to generate
         error_rates_range: Range of error rates for noise simulation (min, max)
-    
+        verbose: If True, print additional information
+        randomize_inputs: If True, randomize the input state of the circuit
+
     Returns:
         Tuple of (noisy_distributions, ideal_distributions)
     """
-    # Create simulator
-    simulator = Simulator(circuit)
-    
-    # Get clean distribution (ground truth)
-    clean_counts = simulator.run_clean(generate_histogram=False)
+    # Get number of qubits from the circuit
     num_qubits = circuit.num_qubits
     
-    # Fix bitstrings and get ideal distribution
-    clean_counts_fixed = {}
-    for bitstring, count in clean_counts.items():
-        fixed_bitstring = bitstring.replace(" ", "")
-        if len(fixed_bitstring) > num_qubits:
-            fixed_bitstring = fixed_bitstring[-num_qubits:]
-        elif len(fixed_bitstring) < num_qubits:
-            fixed_bitstring = fixed_bitstring.zfill(num_qubits)
-        clean_counts_fixed[fixed_bitstring] = count
-    
-    ideal_dist = QuantumErrorNeuralNet.format_counts_to_distribution(
-        clean_counts_fixed, num_qubits=num_qubits
-    )
-    
-    # Generate noisy samples
+    # Generate noisy and ideal samples
     noisy_dists = []
+    ideal_dists = []
     min_error, max_error = error_rates_range
     
     for i in range(num_samples):
-        simulator.reset_noise_model()
-        # Generate random error probabilities for different gate types
+        # If randomizing inputs, create a new circuit with random initialization
+        if randomize_inputs:
+            # Create a new empty circuit with same registers
+            new_circuit = QuantumCircuit(circuit.num_qubits, circuit.num_clbits)
+            
+            # Add reset operations to the beginning
+            new_circuit.reset(range(num_qubits))
+            
+            # Randomly apply X gates to initialize qubits
+            input_state = []
+            for qubit in range(num_qubits):
+                if np.random.random() > 0.5:
+                    new_circuit.x(qubit)
+                    input_state.append(1)
+                else:
+                    input_state.append(0)
+            
+            # Now append the original circuit operations (excluding any initial resets)
+            original_instructions = circuit.data
+            for inst, qargs, cargs in original_instructions:
+                # Skip any reset operations from the original circuit
+                if inst.name != 'reset':
+                    new_circuit.append(inst, qargs, cargs)
+            
+            circuit_copy = new_circuit
+        else:
+            circuit_copy = circuit
+
+        # Create simulator
+        simulator = Simulator(circuit_copy)
+        
+        # Get clean distribution (ground truth)
+        clean_counts = simulator.run_clean(generate_histogram=False)
+        
+        # Fix bitstrings and get ideal distribution
+        clean_counts_fixed = {}
+        for bitstring, count in clean_counts.items():
+            fixed_bitstring = bitstring.replace(" ", "")
+            if len(fixed_bitstring) > num_qubits:
+                fixed_bitstring = fixed_bitstring[-num_qubits:]
+            elif len(fixed_bitstring) < num_qubits:
+                fixed_bitstring = fixed_bitstring.zfill(num_qubits)
+            clean_counts_fixed[fixed_bitstring] = count
+        
+        ideal_dist = QuantumErrorNeuralNet.format_counts_to_distribution(
+            clean_counts_fixed, num_qubits=num_qubits
+        )
+
+        # Add to ideal distributions
+        ideal_dists.append(ideal_dist)
+
+        # Generate noisy samples
         gate_error_probs = {
             'h': np.random.uniform(min_error, max_error),
             'x': np.random.uniform(min_error, max_error),
@@ -198,10 +236,12 @@ def generate_training_data(
         
         # Run noisy simulation
         noisy_counts = simulator.run_noisy(generate_histogram=False)
-        
+
         # Fix bitstrings
         noisy_counts_fixed = {}
         for bitstring, count in noisy_counts.items():
+            if verbose:
+                print(bitstring, num_qubits)
             fixed_bitstring = bitstring.replace(" ", "")
             if len(fixed_bitstring) > num_qubits:
                 fixed_bitstring = fixed_bitstring[-num_qubits:]
@@ -215,10 +255,18 @@ def generate_training_data(
         
         noisy_dists.append(noisy_dist)
     
+    print("\n=== Ideal Distributions Summary ===")
+    for i, dist in enumerate(ideal_dists[:5]):
+        print(f"Distribution {i}:")
+        print(f"  Shape: {dist.shape}")
+        print(f"  Sum: {np.sum(dist)}")
+        print(f"  Non-zero indices: {np.nonzero(dist)[1]}")
+        print(f"  Non-zero values: {dist[0, np.nonzero(dist)[1]]}")
+        print("  ---")
     # Stack all distributions
     noisy_distributions = np.vstack(noisy_dists)
     # Repeat ideal distribution for each noisy one
-    ideal_distributions = np.tile(ideal_dist, (num_samples, 1))
+    ideal_distributions = np.vstack(ideal_dists)
     
     return noisy_distributions, ideal_distributions
 
@@ -282,7 +330,11 @@ def end_to_end_error_mitigation(
     output_dir: str,
     num_training_samples: int = 50,
     num_test_samples: int = 10,
-    model_name: str = "qem_model"
+    model_name: str = "qem_model",
+    error_range: Tuple[float, float] = (0.01, 0.25),
+    hidden_layers: Tuple[int, ...] = None,
+    verbose: bool = True,
+    randomize_inputs: bool = False,
 ) -> Tuple[QuantumErrorNeuralNet, Dict]:
     """
     Perform end-to-end error mitigation workflow: generate training data,
@@ -303,14 +355,38 @@ def end_to_end_error_mitigation(
     # Generate training data
     print(f"Generating {num_training_samples} training samples...")
     train_noisy, train_ideal = generate_training_data(
-        circuit, num_samples=num_training_samples
+        circuit, num_samples=num_training_samples, error_rates_range=error_range,
+        randomize_inputs=randomize_inputs, verbose=verbose
     )
     
     # Generate test data
     print(f"Generating {num_test_samples} test samples...")
     test_noisy, test_ideal = generate_training_data(
-        circuit, num_samples=num_test_samples
+        circuit, num_samples=num_test_samples, error_rates_range=error_range,
+        randomize_inputs=randomize_inputs, verbose=verbose
     )
+    if verbose:
+        # save the test and training data to a file
+        np.savetxt(
+            os.path.join(output_dir, f"{model_name}_train_noisy.csv"),
+            train_noisy,
+            delimiter=","
+        )
+        np.savetxt(
+            os.path.join(output_dir, f"{model_name}_train_ideal.csv"),
+            train_ideal,
+            delimiter=","
+        )
+        np.savetxt(
+            os.path.join(output_dir, f"{model_name}_test_noisy.csv"),
+            test_noisy,
+            delimiter=","
+        )
+        np.savetxt(
+            os.path.join(output_dir, f"{model_name}_test_ideal.csv"),
+            test_ideal,
+            delimiter=","
+        )
     
     # Train and evaluate model
     model, results = train_error_mitigation_model(
@@ -320,7 +396,8 @@ def end_to_end_error_mitigation(
         test_noisy_distributions=test_noisy,
         test_ideal_distributions=test_ideal,
         output_dir=output_dir,
-        model_name=model_name
+        model_name=model_name,
+        hidden_layers=hidden_layers,
     )
     
     print(f"Error mitigation workflow completed. Results saved to {output_dir}")

@@ -178,7 +178,7 @@ class Simulator:
             gate_error_probs=gate_error_probs,
             t1=t1,
             t2=t2,
-            gate_time=gate_time
+            gate_time=gate_time,
         )
         self.noise_model = noise_model
         self.noise_params = params
@@ -332,12 +332,12 @@ class Simulator:
             # Apply each error type separately instead of combining them
             if len(gate_errors) == 1:
                 # Single error type is straightforward
-                noise_model.add_all_qubit_quantum_error(gate_errors[0], [gate_type])
+                noise_model.add_all_qubit_quantum_error(gate_errors[0], [gate_type], warnings=False)
             elif len(gate_errors) > 1:
                 # For multiple error types, apply each one with its own probability
                 for error in gate_errors:
                     # Add each error individually (will be applied sequentially)
-                    noise_model.add_all_qubit_quantum_error(error, [gate_type])
+                    noise_model.add_all_qubit_quantum_error(error, [gate_type], warnings=False)
             else:
                 continue  # No errors to add
                     
