@@ -1,0 +1,6 @@
+{
+  "num_qubits": 4,
+  "training_score": 0.2392751127636891,
+  "model_path": "../../test_results/half_adder_random_results/half_adder_random.joblib",
+  "test_mse": 0.00257907467494769
+}
