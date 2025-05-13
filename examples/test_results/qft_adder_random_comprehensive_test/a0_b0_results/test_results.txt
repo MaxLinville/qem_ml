@@ -1,0 +1,8 @@
+Test circuit: None
+Model: ../../test_results/qft_adder_random_results/qft_adder_random.joblib
+Input values: [0, 0, 0, 0, 0]
+Error rate: 0.05
+
+Noisy MSE: 0.004175
+Mitigated MSE: 0.003652
+Improvement: 12.54%

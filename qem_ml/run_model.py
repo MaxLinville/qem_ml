@@ -160,6 +160,7 @@ def test_model_with_inputs(
     plt.tight_layout()
     plt.savefig(f"{output_dir}/comparison_plot.png")
     
+    plot_histogram(mitigated_counts).savefig(f"{output_dir}/mitigated_histogram.png")
     # Calculate metrics using the normalized distributions
     clean_dist = np.array(clean_values)
     noisy_dist = np.array(noisy_values)

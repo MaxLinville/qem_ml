@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from qem_ml.test_model import test_model_with_inputs
+from qem_ml.run_model import test_model_with_inputs
 import os
 
 # Set input values for testing

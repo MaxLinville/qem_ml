@@ -1,0 +1,17 @@
+a,b,expected,clean_result,clean_correct,noisy_result,noisy_correct,mitigated_result,mitigated_correct,noisy_mse,mitigated_mse,improvement,directory
+0,0,0,0,True,0,True,0,True,0.0041751861572265625,0.0036517923528497868,12.535819593836962,../../test_results/qft_adder_random_comprehensive_test/a0_b0_results
+0,1,1,1,True,1,True,1,True,0.0032052040100097657,0.0033895492553710936,-5.751435627361712,../../test_results/qft_adder_random_comprehensive_test/a0_b1_results
+0,2,2,2,True,2,True,2,True,0.0063558058305220174,0.0011906190352006392,81.26722138862365,../../test_results/qft_adder_random_comprehensive_test/a0_b2_results
+0,3,3,3,True,3,True,3,True,0.007282638549804687,0.0006636619567871094,90.88706720444189,../../test_results/qft_adder_random_comprehensive_test/a0_b3_results
+1,0,1,1,True,1,True,1,True,0.006952025673606179,0.0013406926935369318,80.7150785039969,../../test_results/qft_adder_random_comprehensive_test/a1_b0_results
+1,1,2,2,True,2,True,2,True,0.008021404868678042,0.0011808495772512334,85.27876853763846,../../test_results/qft_adder_random_comprehensive_test/a1_b1_results
+1,2,3,3,True,3,True,3,True,0.011056197317023026,0.000533957230417352,95.17051645238614,../../test_results/qft_adder_random_comprehensive_test/a1_b2_results
+1,3,4,4,True,4,True,4,True,0.005235217866443452,0.002102261497860863,59.84385843164469,../../test_results/qft_adder_random_comprehensive_test/a1_b3_results
+2,0,2,2,True,2,True,2,True,0.004257869720458984,0.002213573455810547,48.01218446928125,../../test_results/qft_adder_random_comprehensive_test/a2_b0_results
+2,1,3,3,True,3,True,3,True,0.006810760498046875,0.0007120132446289063,89.54576005376947,../../test_results/qft_adder_random_comprehensive_test/a2_b1_results
+2,2,4,4,True,4,True,4,True,0.0074805305117652526,0.0012924557640438988,82.7224050217943,../../test_results/qft_adder_random_comprehensive_test/a2_b2_results
+2,3,5,5,True,5,True,5,True,0.006798484108664773,0.0006066235628995029,91.07707610691695,../../test_results/qft_adder_random_comprehensive_test/a2_b3_results
+3,0,3,3,True,3,True,3,True,0.006545618960731908,0.0009634118331106086,85.28157781731183,../../test_results/qft_adder_random_comprehensive_test/a3_b0_results
+3,1,4,4,True,4,True,4,True,0.0077724456787109375,0.0010884602864583333,85.9959100204499,../../test_results/qft_adder_random_comprehensive_test/a3_b1_results
+3,2,5,5,True,5,True,5,True,0.010591593655672941,0.0005423805930397727,94.87914084818323,../../test_results/qft_adder_random_comprehensive_test/a3_b2_results
+3,3,6,6,True,6,True,6,True,0.008281274275346235,0.0010193044489080255,87.69145405626105,../../test_results/qft_adder_random_comprehensive_test/a3_b3_results
