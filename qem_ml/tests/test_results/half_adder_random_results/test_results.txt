@@ -3,6 +3,6 @@ Model: /home/wslmax/classwork/QuantumSoftware/qem_ml/qem_ml/tests/integration_te
 Input values: [1, 0, 0, 0]
 Error rate: 0.05
 
-Noisy MSE: 0.012809
-Mitigated MSE: 0.141346
-Improvement: -1003.51%
+Noisy MSE: 0.008681
+Mitigated MSE: 0.009135
+Improvement: -5.24%
