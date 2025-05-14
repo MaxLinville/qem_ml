@@ -1,12 +1,12 @@
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import QFT
-from qem_ml.run_model import test_model_with_inputs
+from qem_ml.run_model import run_model_with_inputs
 import numpy as np
 import os
 import pandas as pd
 from datetime import datetime
 
-TEST_NAME = "qft_adder_random"
+TEST_NAME = "qft_adder_4_bit"
 BASE_OUTPUT_DIRECTORY = f"../../test_results/{TEST_NAME}_comprehensive_test"
 MODEL_PATH = f"../../test_results/{TEST_NAME}_results/{TEST_NAME}.joblib"
 
@@ -17,11 +17,15 @@ os.makedirs(BASE_OUTPUT_DIRECTORY, exist_ok=True)
 results_summary = []
 
 # Number of bits per operand
-n = 2
+n = 4  # Changed to 4 bits
 
-# Loop through all combinations of a and b
-for a in range(4):  # 0-3
-    for b in range(4):  # 0-3
+# Test a limited subset of combinations to avoid 256 tests
+# Test small (0-3), medium (7-9), and large (13-15) values
+test_values = [0, 1, 2, 3, 7, 8, 9, 13, 14, 15]
+
+# Loop through selected combinations of a and b
+for a in test_values:
+    for b in test_values:
         print(f"\n{'='*50}")
         print(f"Testing inputs: a={a}, b={b}")
         
@@ -30,7 +34,7 @@ for a in range(4):  # 0-3
         os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
         
         # Create QFT adder circuit with specific input values
-        circuit = QuantumCircuit(2*n+1, n+1)  # 5 qubits, 3 classical bits
+        circuit = QuantumCircuit(2*n+1, n+1)  # 9 qubits, 5 classical bits
 
         # Set input values based on a and b
         # Convert a to binary and apply X gates for 1s
@@ -47,18 +51,17 @@ for a in range(4):  # 0-3
 
         # Apply QFT to the target register (first number + carry qubit)
         qft = QFT(n+1, do_swaps=False)
-        circuit.append(qft, [0, 1, 4])
+        circuit.append(qft, list(range(n)) + [2*n])  # [0,1,2,3,8]
 
         circuit.barrier()
 
         # Define target register qubits explicitly
-        target_qubits = [0, 1, 4]  # First number + carry
+        target_qubits = list(range(n)) + [2*n]  # [0,1,2,3,8] for n=4
 
         # Apply controlled phase rotations
-        # For each qubit in the second operand
         for j in range(n):
             # Control qubit is from second operand (j+n)
-            control = j + n
+            control = j + n  # Controls are [4,5,6,7]
             
             # For each target qubit in the target register
             for k in range(n+1):
@@ -77,14 +80,15 @@ for a in range(4):  # 0-3
 
         # Apply inverse QFT to the result register
         inverse_qft = QFT(n+1, do_swaps=False).inverse()
-        circuit.append(inverse_qft, [0, 1, 4])
+        circuit.append(inverse_qft, list(range(n)) + [2*n])  # [0,1,2,3,8]
 
         circuit.barrier()
 
-        # Measure the result (3 bits to represent numbers 0-5)
-        circuit.measure(0, 2)  # LSB of result
-        circuit.measure(1, 1)
-        circuit.measure(4, 0)  # MSB of result (carry)
+        # Measure the result (5 bits to represent numbers 0-31)
+        # Map qubits to classical bits in reverse order
+        for i in range(n):
+            circuit.measure(i, n-i)  # LSB to MSB in reverse order
+        circuit.measure(2*n, 0)  # MSB (carry bit) to classical bit 0
 
         # Save circuit diagram
         circuit.draw(output='mpl', filename=f"{OUTPUT_DIRECTORY}/circuit_drawing.png")
@@ -93,7 +97,7 @@ for a in range(4):  # 0-3
 
         # Run test with the specified inputs
         try:
-            results = test_model_with_inputs(
+            results = run_model_with_inputs(
                 circuit_file=None,  # No file needed as we are passing the circuit directly
                 circuit=circuit,    # Pass the circuit we created
                 model_path=MODEL_PATH,
@@ -108,7 +112,7 @@ for a in range(4):  # 0-3
                 if ' ' in bitstring:
                     relevant_bits = bitstring.split()[-1]
                 else:
-                    relevant_bits = bitstring[-3:]
+                    relevant_bits = bitstring[-5:]  # Changed to 5 bits for 4-bit adder
                     
                 # Reverse the bits to account for the measurement order
                 reversed_bits = relevant_bits[::-1]
@@ -163,13 +167,24 @@ for a in range(4):  # 0-3
 df = pd.DataFrame(results_summary)
 
 # Calculate summary statistics
-summary = {
-    'total_tests': len(df),
-    'clean_accuracy': df['clean_correct'].mean() if 'clean_correct' in df.columns else 'N/A',
-    'noisy_accuracy': df['noisy_correct'].mean() if 'noisy_correct' in df.columns else 'N/A',
-    'mitigated_accuracy': df['mitigated_correct'].mean() if 'mitigated_correct' in df.columns else 'N/A',
-    'average_improvement': df['improvement'].mean() if 'improvement' in df.columns else 'N/A',
-}
+try:
+    # Filter out any rows with errors
+    valid_results = df[~df['clean_result'].isna()]
+    
+    summary = {
+        'total_tests': len(df),
+        'successful_tests': len(valid_results),
+        'clean_accuracy': valid_results['clean_correct'].mean() if len(valid_results) > 0 else 'N/A',
+        'noisy_accuracy': valid_results['noisy_correct'].mean() if len(valid_results) > 0 else 'N/A',
+        'mitigated_accuracy': valid_results['mitigated_correct'].mean() if len(valid_results) > 0 else 'N/A',
+        'average_improvement': valid_results['improvement'].mean() if len(valid_results) > 0 else 'N/A',
+    }
+except Exception as e:
+    print(f"Error calculating summary: {e}")
+    summary = {
+        'total_tests': len(df),
+        'error': str(e)
+    }
 
 # Save results to CSV
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -180,9 +195,15 @@ print("\n" + "="*50)
 print("OVERALL TESTING SUMMARY")
 print("="*50)
 print(f"Total tests: {summary['total_tests']}")
-print(f"Clean accuracy: {summary['clean_accuracy']:.2%}")
-print(f"Noisy accuracy: {summary['noisy_accuracy']:.2%}")
-print(f"Mitigated accuracy: {summary['mitigated_accuracy']:.2%}")
-print(f"Average improvement: {summary['average_improvement']:.2f}%")
+if 'successful_tests' in summary:
+    print(f"Successful tests: {summary['successful_tests']}")
+if 'clean_accuracy' in summary and summary['clean_accuracy'] != 'N/A':
+    print(f"Clean accuracy: {summary['clean_accuracy']:.2%}")
+if 'noisy_accuracy' in summary and summary['noisy_accuracy'] != 'N/A':
+    print(f"Noisy accuracy: {summary['noisy_accuracy']:.2%}")
+if 'mitigated_accuracy' in summary and summary['mitigated_accuracy'] != 'N/A':
+    print(f"Mitigated accuracy: {summary['mitigated_accuracy']:.2%}")
+if 'average_improvement' in summary and summary['average_improvement'] != 'N/A':
+    print(f"Average improvement: {summary['average_improvement']:.2f}%")
 
 print(f"\nDetailed results saved to: {BASE_OUTPUT_DIRECTORY}/comprehensive_results_{timestamp}.csv")

@@ -1,0 +1,6 @@
+{
+  "num_qubits": 4,
+  "training_score": 0.1801058452067434,
+  "model_path": "/home/wslmax/classwork/QuantumSoftware/qem_ml/qem_ml/tests/integration_test/../test_results/half_adder_random_results/half_adder_random.joblib",
+  "test_mse": 0.01898874352279663
+}

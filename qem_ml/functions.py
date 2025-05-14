@@ -64,7 +64,7 @@ def train_error_mitigation_model(
     # Train model
     print("Training error mitigation model...")
     score = model.train(noisy_distributions, ideal_distributions)
-    print(f"Training completed with score: {score:.4f}")
+    print(f"Training completed with score: {float(score):.4f}")
     
     # Save model
     model_path = os.path.join(output_dir, f"{model_name}.joblib")
@@ -168,6 +168,7 @@ def generate_training_data(
     min_error, max_error = error_rates_range
     
     for i in range(num_samples):
+        print(f"Generating sample {i+1}/{num_samples}...")
         # If randomizing inputs, create a new circuit with random initialization
         if randomize_inputs:
             # Create a new empty circuit with same registers
@@ -187,7 +188,10 @@ def generate_training_data(
             
             # Now append the original circuit operations (excluding any initial resets)
             original_instructions = circuit.data
-            for inst, qargs, cargs in original_instructions:
+            for instruction in original_instructions:
+                inst = instruction.operation
+                qargs = instruction.qubits
+                cargs = instruction.clbits
                 # Skip any reset operations from the original circuit
                 if inst.name != 'reset':
                     new_circuit.append(inst, qargs, cargs)

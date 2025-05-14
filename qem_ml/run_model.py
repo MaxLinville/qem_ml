@@ -10,7 +10,7 @@ from qem_ml.functions import apply_error_mitigation
 from qem_ml.circuits import load_circuit_from_file
 
 
-def test_model_with_inputs(
+def run_model_with_inputs(
     model_path: str,
     input_values: List[int],
     circuit: QuantumCircuit | None = None,

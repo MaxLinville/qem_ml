@@ -1,5 +1,5 @@
 from qiskit import QuantumCircuit
-from qem_ml.run_model import test_model_with_inputs
+from qem_ml.run_model import run_model_with_inputs
 import os
 
 # Set input values for testing
@@ -37,7 +37,7 @@ print(f"Testing half adder model with inputs: a={a}, b={b}")
 print(f"Expected classical result: sum={a ^ b}, carry={a & b}")
 
 # Run test with the specified inputs
-results = test_model_with_inputs(
+results = run_model_with_inputs(
     circuit_file=None,  # No file needed as we are passing the circuit directly
     circuit=circuit,    # Pass the circuit we created
     model_path=MODEL_PATH,
