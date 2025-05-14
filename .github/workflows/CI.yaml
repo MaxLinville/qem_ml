@@ -1,14 +1,10 @@
 name: CI
 
 on:
-  # GitHub has started calling new repo's first branch "main" https://github.com/github/renaming
-  # The cookiecutter uses the "--initial-branch" flag when it runs git-init
   push:
-    branches:
-      - "main"
+    branches: [ main ]
   pull_request:
-    branches:
-      - "main"
+    branches: [ main ]
 
 jobs:
   test:
@@ -16,20 +12,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: [3.9, "3.10", "3.11"]
+        os: [ ubuntu-latest ]
+        python-version: [ 3.9, "3.10", "3.11" ]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Additional info about the build
-        shell: bash
         run: |
           uname -a
           df -h
           ulimit -a
 
-      # More info on options: https://github.com/marketplace/actions/setup-micromamba
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: devtools/conda-envs/test_env.yaml
@@ -38,11 +35,10 @@ jobs:
             channels:
               - conda-forge
               - defaults
-          create-args: >- 
+          create-args: >-
             python=${{ matrix.python-version }}
 
       - name: Install package
-        # conda setup requires this special shell
         shell: bash -l {0}
         run: |
           python -m pip install . --no-deps
@@ -51,17 +47,11 @@ jobs:
           micromamba list
 
       - name: Run tests
-        # conda setup requires this special shell
         shell: bash -l {0}
         run: |
-          pytest -v --import-mode=importlib --cov=qem_ml --cov-report=xml --color=yes qem_ml/tests/
-
-      - name: CodeCov
-        uses: codecov/codecov-action@v1
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
+          pytest -v --import-mode=importlib \
+            --cov=qem_ml --cov-report=xml \
+            --color=yes qem_ml/tests/
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -70,5 +60,6 @@ jobs:
           file: ./coverage.xml
           flags: unittests
           name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
+          branch: ${{ github.event.pull_request.head.ref || github.ref_name }}
           slug: MaxLinville/qem_ml
           verbose: true
