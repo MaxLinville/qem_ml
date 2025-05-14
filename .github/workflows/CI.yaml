@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest ]
-        python-version: [ 3.9, "3.10", "3.11" ]
+        python-version: [ "3.11" ]
 
     steps:
       - name: Checkout repository
@@ -39,7 +39,7 @@ jobs:
       - name: Install package
         shell: bash -l {0}
         run: |
-          python -m pip install -e . --no-deps
+          python -m pip install . --no-deps
           python -m pip install -r requirements.txt
           python -m pip install qiskit_qasm3_import
           micromamba list
@@ -47,7 +47,7 @@ jobs:
       - name: Run tests
         shell: bash -l {0}
         run: |
-          pytest -v --cov=qem_ml --cov-report=xml --color=yes qem_ml/tests/
+          pytest -v --cov=qem_ml --import-mode=importlib --cov-report=xml --color=yes qem_ml/tests/
 
       - name: Check coverage report
         run: head -n 20 coverage.xml
