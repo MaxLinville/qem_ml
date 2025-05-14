@@ -51,11 +51,14 @@ jobs:
             --cov=qem_ml --cov-report=xml \
             --color=yes qem_ml/tests/
 
+      - name: Check coverage report
+        run: head -n 20 coverage.xml
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.xml
+          files: ./coverage.xml
           flags: unittests
           name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
           branch: ${{ github.event.pull_request.head.ref || github.ref_name }}
