@@ -47,9 +47,7 @@ jobs:
       - name: Run tests
         shell: bash -l {0}
         run: |
-          pytest -v --import-mode=importlib \
-            --cov=qem_ml --cov-report=xml \
-            --color=yes qem_ml/tests/
+          pytest -v --cov=qem_ml --cov-report=xml --color=yes qem_ml/tests/
 
       - name: Check coverage report
         run: head -n 20 coverage.xml
