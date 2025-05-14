@@ -1,6 +1,5 @@
 import random
 from typing import Dict, Optional, Tuple, List, Union
-
 from qiskit import QuantumCircuit
 from qiskit.visualization import plot_histogram
 from qiskit.transpiler import generate_preset_pass_manager
@@ -87,7 +86,7 @@ class Simulator:
 
         return counts
     
-    def run_noisy(self, filename_prefix: str = "noisy_", generate_histogram: bool = True) -> Dict:
+    def run_noisy(self, filename_prefix: str = "noisy_", generate_histogram: bool = True, draw_circuit: bool = False) -> Dict:
         """
         Run the quantum circuit with noise.
         
@@ -107,6 +106,10 @@ class Simulator:
         if self.noise_model is None or self.noisy_circuit is None:
             self.add_noise()
         
+        if draw_circuit:
+            # Draw the noisy circuit
+            self.noisy_circuit.draw(output='mpl', filename=f"{filename_prefix}noisy_circuit.png")
+            print(f"Noisy circuit saved as {filename_prefix}noisy_circuit.png")
         # Create a simulator backend with noise model
         backend = AerSimulator(noise_model=self.noise_model)
         
@@ -250,8 +253,8 @@ class Simulator:
             noise_model.add_all_qubit_quantum_error(error_meas_x, ["measure"])
         
         if self.PAULI_Z in error_types:
-            p_reset_z = p_reset * 0.8  # Typically Z errors are less frequent
-            p_meas_z = p_meas * 0.8
+            p_reset_z = p_reset
+            p_meas_z = p_meas
             params["p_reset_z"] = p_reset_z
             params["p_meas_z"] = p_meas_z
             

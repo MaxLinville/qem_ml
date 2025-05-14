@@ -122,5 +122,6 @@ ENV/
 
 # Cookiecutter-CMS Test Artifacts
 /tests/CI_files
-
-qft_adder*/
+mitiq*
+qft_adder_4*/
+venv*

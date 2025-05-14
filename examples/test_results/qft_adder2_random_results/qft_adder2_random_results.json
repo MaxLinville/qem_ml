@@ -1,0 +1,6 @@
+{
+  "num_qubits": 5,
+  "training_score": 0.24906454323253738,
+  "model_path": "../../test_results/qft_adder2_random_results/qft_adder2_random.joblib",
+  "test_mse": 0.00023150876386498397
+}

@@ -17,7 +17,8 @@ def run_model_with_inputs(
     circuit_file: Union[str,None] = None,
     error_rate: float = 0.05,
     shots: int = 8192,
-    output_dir: str = "./test_results"
+    output_dir: str = "./test_results",
+    draw_circuit: bool = False,
 ):
     """
     Test a trained error mitigation model with specific circuit inputs.
@@ -81,9 +82,10 @@ def run_model_with_inputs(
     )
     
     # Run noisy simulation
+
     noisy_counts = simulator.run_noisy(
         filename_prefix=f"{output_dir}/noisy_", 
-        generate_histogram=True
+        generate_histogram=True, draw_circuit=draw_circuit
     )
     
     # Apply error mitigation
