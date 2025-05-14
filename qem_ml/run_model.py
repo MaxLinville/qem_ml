@@ -3,7 +3,7 @@ import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.visualization import plot_histogram
 import matplotlib.pyplot as plt
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from qem_ml.circuits.simulator import Simulator
 from qem_ml.models.qe_neural_net import QuantumErrorNeuralNet
 from qem_ml.functions import apply_error_mitigation
@@ -13,8 +13,8 @@ from qem_ml.circuits import load_circuit_from_file
 def run_model_with_inputs(
     model_path: str,
     input_values: List[int],
-    circuit: QuantumCircuit | None = None,
-    circuit_file: str | None = None,
+    circuit: Union[QuantumCircuit, None] = None,
+    circuit_file: Union[str,None] = None,
     error_rate: float = 0.05,
     shots: int = 8192,
     output_dir: str = "./test_results"
